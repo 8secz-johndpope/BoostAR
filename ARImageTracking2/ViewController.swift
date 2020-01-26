@@ -23,22 +23,34 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Show statistics such as fps and timing information
         sceneView.showsStatistics = true
-        
+        sceneView.debugOptions = .showFeaturePoints
         // Create a new scene
         let scene = SCNScene(named: "art.scnassets/SceneKit Scene.scn")!
         
         // Set the scene to the view
         sceneView.scene = scene
+        sceneView.scene.accessibilityElementsHidden = true
+        guard let container = sceneView.scene.rootNode.childNode(withName: "container", recursively: false) else {
+                return
+                }
+        container.isHidden = true
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         // Create a session configuration
-       // let configuration = ARWorldTrackingConfiguration()
-        let configuration = ARImageTrackingConfiguration()
-        guard let arImages = ARReferenceImage.referenceImages(inGroupNamed: "AR Resources Group", bundle: nil) else{return}
-               configuration.trackingImages = arImages
+        let configuration = ARWorldTrackingConfiguration()
+       
+//        if #available(iOS 13.0, *) {
+//            configuration.frameSemantics.insert(.personSegmentationWithDepth)
+//        } else {
+//            // Fallback on earlier versions
+//        }
+       // let configuration = ARImageTrackingConfiguration()
+        guard let arImages = ARReferenceObject.referenceObjects(inGroupNamed: "AR Resources-3", bundle: nil) else{return}
+               configuration.detectionObjects = arImages
         
         // Run the view's session
         sceneView.session.run(configuration)
@@ -58,14 +70,14 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     // MARK: - ARSCNViewDelegate
     
-/*
+
     // Override to create and configure nodes for anchors added to the view's session.
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
-    }
-*/
+//    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+//        let node = SCNNode()
+//
+//        return node
+//    }
+
     
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
@@ -82,27 +94,54 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        guard anchor is ARImageAnchor else {return}
-        //container
-        guard let container = sceneView.scene.rootNode.childNode(withName: "container", recursively: false) else {
-            return
-        }
-        container.removeFromParentNode()
-        node.addChildNode(container)
-        container.isHidden = false
-       // let videoURL = Bundle.main.url(forResource: "video", withExtension: "mp4")
-       // let videoPlayer = AVPlayer(url: videoURL!)
-        //let videoScene = SKScene(size: CGSize(width: 720, height: 1280))
-        //let videoNode = SKVideoNode(avPlayer: videoPlayer)
-        //videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
-        //videoNode.size = videoScene.size
-        //videoNode.yScale = -1
-        //videoNode.play()
-        //videoScene.addChild(videoNode)
-       // guard let video = container.childNode(withName: "video", recursively: false)else{return}
-        //video.geometry?.firstMaterial?.diffuse.contents = videoScene
+        sceneView.scene.accessibilityElementsHidden = false
+        guard anchor is ARObjectAnchor else {return}
+                    guard let container = sceneView.scene.rootNode.childNode(withName: "container", recursively: false) else {
+                        return
+                    }
+            container.removeFromParentNode()
+            node.addChildNode(container)
+            let effectnode = SKEffectNode()
         
+            container.isHidden = false
+                    let videoURL = Bundle.main.url(forResource: "video1", withExtension: "mov")
+                    let videoPlayer = AVPlayer(url: videoURL!)
+                    let videoScene = SKScene(size: CGSize(width: 720, height: 1280))
+                    let videoNode = SKVideoNode(avPlayer: videoPlayer)
+                    videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
+                    videoNode.size = videoScene.size
+                    videoNode.yScale = -1
+                    videoNode.play()
+            
+                    videoScene.addChild(videoNode)
+                    guard let video = container.childNode(withName: "video", recursively: true)else{return}
+                    video.geometry?.firstMaterial?.diffuse.contents = videoScene
+
         
     }
+//    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+//        guard anchor is ARImageAnchor else {return}
+//        //container
+//        guard let container = sceneView.scene.rootNode.childNode(withName: "container", recursively: false) else {
+//            return
+//        }
+//        container.removeFromParentNode()
+//        node.addChildNode(container)
+//        container.isHidden = false
+//        let videoURL = Bundle.main.url(forResource: "Movie", withExtension: "mp4")
+//        let videoPlayer = AVPlayer(url: videoURL!)
+//        let videoScene = SKScene(size: CGSize(width: 720, height: 1280))
+//        let videoNode = SKVideoNode(avPlayer: videoPlayer)
+//        videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
+//        videoNode.size = videoScene.size
+//        videoNode.yScale = -1
+//        videoNode.play()
+//
+//        videoScene.addChild(videoNode)
+//        guard let video = container.childNode(withName: "video", recursively: true)else{return}
+//        video.geometry?.firstMaterial?.diffuse.contents = videoScene
+//
+//
+//    }
     
 }
